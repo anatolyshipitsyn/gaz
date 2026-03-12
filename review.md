@@ -314,38 +314,70 @@ graph LR
 
 ### 🏆 Рекомендуемая конфигурация MVP
 
-С учётом требований ТЗ по RBAC оптимальный подход — **А1 (Custom Stack) + А3 (n8n для автоматизации)**:
+С учётом требований ТЗ по RBAC рекомендуется **А1 — Custom Stack**:
 
 ```mermaid
-graph LR
-    subgraph CHAT_LAYER["💬 Слой чата (А1: Custom Stack)"]
-        CHAT2["LlamaIndex + Keycloak\n+ политики безопасности"]
-    end
-    subgraph AUTO_LAYER["🔀 Слой автоматизации (А3: n8n)"]
-        INGEST2["Ingestion pipeline\n(OCR → чанкинг → индекс)"]
-        NOTIF2["Уведомления\n(ТО, актуальность)"]
-        INTEG2["Интеграции\n(CSV → MinIO → Qdrant)"]
-    end
-    subgraph INFRA["🧠 Инфраструктура"]
-        VLLM_C["vLLM: Qwen3-Omni"]
-        QDRANT_C["Qdrant"]
-        PG_C["PostgreSQL"]
+graph TB
+    subgraph CLIENT["🖥️ Клиентский уровень"]
+        WEB["Web UI\n(Chainlit)"]
+        TERM["Производственные\nтерминалы / планшеты"]
     end
 
-    CHAT2 --> VLLM_C
-    CHAT2 --> QDRANT_C
-    INGEST2 --> QDRANT_C
-    INGEST2 --> PG_C
-    NOTIF2 --> PG_C
+    subgraph GATEWAY["🔐 Доступ и безопасность"]
+        PROXY["Nginx\n(TLS termination)"]
+        KC["Keycloak\n(7 ролей ТЗ: Оператор / Механик /\nИнженер / Мастер / ПТО / ИТ / Владелец)"]
+    end
 
-    style CHAT_LAYER fill:#e3f2fd,stroke:#2196f3
-    style AUTO_LAYER fill:#fff3e0,stroke:#ff9800
-    style INFRA fill:#e8eaf6,stroke:#3949ab
+    subgraph CORE["⚙️ Оркестратор"]
+        LL["LlamaIndex\n+ ACL-фильтры по роли и типу документа"]
+        POLICY["Политики безопасности\n(HSE / LOTO / опасные темы)"]
+    end
+
+    subgraph RAG["🔍 RAG-слой"]
+        Q["Qdrant\n(коллекции с ACL-метаданными)"]
+        E["Qwen3-Embedding\n(локально)"]
+    end
+
+    subgraph OMNI["🧠 Qwen3-Omni-30B vLLM\n✅ air-gapped"]
+        ASR_C["ASR (встроен)"]
+        LLM_C["LLM (встроен)"]
+        TTS_C["TTS (встроен)"]
+        VIS_C["Vision / схемы (встроен)"]
+    end
+
+    subgraph STORE["📄 Хранилище знаний"]
+        OCR["OCR Pipeline\n(PaddleOCR + unstructured.io)"]
+        MINIO["MinIO"]
+        PG["PostgreSQL\n(метаданные / аудит / версии)"]
+    end
+
+    subgraph ADMIN["🛠️ Админка"]
+        UPLOAD["Загрузка документов\nКлассификация / Версионирование"]
+        CARDS["Карточки оборудования"]
+    end
+
+    WEB & TERM --> PROXY --> KC --> LL
+    WEB & TERM -->|"🎙️ аудио"| ASR_C --> LL
+    LL --> POLICY --> Q --> E
+    LL --> LLM_C
+    LLM_C -->|"ответ"| LL
+    LL -->|"текст ответа"| TTS_C -->|"🔊 аудио"| WEB
+    OCR --> MINIO --> PG
+    OCR -.->|"индексация"| Q
+    ADMIN --> MINIO & PG
+
+    style CLIENT fill:#e8f5e9,stroke:#4caf50
+    style GATEWAY fill:#fff3e0,stroke:#ff9800
+    style CORE fill:#e3f2fd,stroke:#2196f3
+    style RAG fill:#f3e5f5,stroke:#9c27b0
+    style OMNI fill:#e8eaf6,stroke:#3949ab,stroke-width:3px
+    style STORE fill:#e0f2f1,stroke:#009688
+    style ADMIN fill:#f5f5f5,stroke:#9e9e9e
 ```
 
-LlamaIndex (кастомный оркестратор) с Keycloak берёт на себя чат, полноценный RBAC (7 ролей из ТЗ) и политики безопасности. n8n — весь ingestion pipeline и уведомления без единой строки кода. vLLM с Qwen3-Omni — единый AI-бэкенд для обоих слоёв. **Стоимость:** $40–55k, **срок:** 2.5–3 месяца.
+Единый стек без внешних зависимостей: LlamaIndex обеспечивает полный контроль над RAG-логикой и ACL-фильтрами, Keycloak — 7 ролей ТЗ с разграничением по площадке и типу документа, Qwen3-Omni через vLLM — LLM + ASR + TTS + Vision в одном процессе. **Стоимость:** $35–55k, **срок:** 2.5–3.5 месяца.
 
-### Поток обработки запроса (рекомендуемый MVP: А1 + А3)
+### Поток обработки запроса (рекомендуемый MVP: А1)
 
 ```mermaid
 sequenceDiagram
@@ -372,18 +404,17 @@ sequenceDiagram
     OMNI-->>User: 🔊 Аудио + текст ответа
 ```
 
-### ✅ Итоговые плюсы и ❌ минусы (рекомендуемый MVP: А1 + А3)
+### ✅ Итоговые плюсы и ❌ минусы (рекомендуемый MVP: А1)
 
 | ✅ Плюсы | ❌ Минусы |
 |---------|---------|
-| ✅ Полностью air-gapped, данные не покидают контур | Требует GPU: RTX 4090 / RTX 4090D ($5–12k) |
-| ✅ Полный RBAC: 7 ролей ТЗ + разграничение по цехам и типам документов | Больше кода, чем AnythingLLM — нужен Python-разработчик |
+| ✅ Полностью air-gapped, данные не покидают контур | Требует GPU: RTX 4090D ($8–12k) |
+| ✅ Полный RBAC: 7 ролей ТЗ + разграничение по цехам и типам документов | Нужен Python-разработчик с опытом LlamaIndex |
 | Голос + Vision RAG с первого дня (Qwen3-Omni) | Карточки оборудования — кастомная разработка |
-| Ingestion pipeline без кода (n8n) | LlamaIndex + n8n = два инструмента для поддержки |
-| Уведомления по ТО и актуальности — из коробки (n8n) | Срок чуть дольше: 2.5–3 мес. vs. 1.5–2 у AnythingLLM |
-| Прямая миграция в Enterprise без смены архитектуры | — |
+| Единый стек без внешних оркестраторов — проще поддерживать | Нет GUI для настройки RAG-пайплайна (только код) |
+| Прямая миграция в Enterprise без смены архитектуры | Срок: 2.5–3.5 мес. — дольше А2/А4 |
 
-> **Обоснование:** Custom Stack (LlamaIndex + Keycloak) + n8n — единственный вариант MVP, который **одновременно соответствует требованиям ТЗ по RBAC** и обеспечивает путь к Enterprise без переписывания. AnythingLLM отклонён как основной оркестратор из-за фундаментального ограничения: 3 фиксированные роли без кастомизации несовместимы с 7 ролями ТЗ и разграничением по типам документов.
+> **Обоснование:** A1 Custom Stack — единственный вариант MVP, полностью соответствующий требованиям ТЗ по RBAC и безопасности. Единый стек без дополнительных оркестраторов проще в эксплуатации и обеспечивает прямой путь к Enterprise без переписывания ядра.
 
 ---
 
