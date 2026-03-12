@@ -375,31 +375,25 @@ graph TB
 * **Web UI (Chainlit):** Основной интерфейс чата, поддерживающий потоковую передачу текста и аудио. Выбран за высокую скорость разработки и встроенную поддержку мультимодальности.
     * **Документация (PoC):** [Chainlit Docs](https://docs.chainlit.io/)
 
-#### 🔐 2. Доступ и безопасность (Gateway & Security)
-* **Nginx (TLS termination):** Обеспечивает шифрование трафика внутри локальной сети и обратное проксирование.
-    * **Документация (PoC):** [Nginx Docs](https://nginx.org/en/docs/)
-* **Keycloak (Identity & Access):** Аутентификация и передача атрибута цеха пользователя в оркестратор для фильтрации индексов по цехам.
-    * **Документация (PoC):** [Keycloak Guides](https://www.keycloak.org/guides)
-
-#### ⚙️ 3. Оркестратор (Orchestration Layer)
+#### ⚙️ 2. Оркестратор (Orchestration Layer)
 * **LlamaIndex:** Фреймворк для связи LLM с данными. Отвечает за ACL-фильтрацию (доступ к документам) и управление контекстом.
     * **Документация (PoC):** [LlamaIndex Docs](https://docs.llamaindex.ai/)
 * **Safety Engine (Guardrails):** Слой логики для блокировки галлюцинаций и проверки запросов на соответствие правилам безопасности (HSE).
     * **Документация (PoC):** [LlamaIndex Guardrails](https://docs.llamaindex.ai/en/stable/examples/cookbooks/llama_guard/)
 
-#### 🔍 4. RAG-слой (Knowledge Retrieval)
+#### 🔍 3. RAG-слой (Knowledge Retrieval)
 * **Qdrant (Vector Database):** Хранилище векторов с фильтрацией по цеху (отдельные коллекции или метаданные по цехам) и версии документа.
     * **Документация (PoC):** [Qdrant Docs](https://qdrant.tech/documentation/)
 * **Qwen3-Embedding:** Локальная модель для создания векторных представлений текста.
     * **Документация (PoC):** [HuggingFace - Qwen](https://huggingface.co/Qwen)
 
-#### 🧠 5. AI-ядро (Qwen3-Omni vLLM)
+#### 🧠 4. AI-ядро (Qwen3-Omni vLLM)
 * **vLLM Runtime:** Высокопроизводительный движок для инференса, объединяющий работу с текстом и голосом в одном контейнере.
     * **Документация (PoC):** [vLLM Docs](https://docs.vllm.ai/)
 * **Qwen3-Omni-30B:** Мультимодальная модель (Any-to-Any), обрабатывающая голос и изображения напрямую.
     * **Документация (PoC):** [Qwen2.5-VL Blog (Omni Base)](https://qwenlm.github.io/blog/qwen2.5-vl/)
 
-#### 📄 6. Хранилище знаний (Knowledge Storage)
+#### 📄 5. Хранилище знаний (Knowledge Storage)
 * **OCR Pipeline (PaddleOCR):** Инструмент для распознавания текста на чертежах и сканах.
     * **Документация (PoC):** [PaddleOCR GitHub](https://github.com/PaddlePaddle/PaddleOCR)
 * **MinIO:** S3-хранилище для исходных PDF-файлов и медиа-данных.
