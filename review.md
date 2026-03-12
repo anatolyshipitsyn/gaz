@@ -379,7 +379,7 @@ graph TB
 * **LlamaIndex:** Фреймворк для связи LLM с данными. Отвечает за ACL-фильтрацию (доступ к документам) и управление контекстом.
     * **Документация (PoC):** [LlamaIndex Docs](https://docs.llamaindex.ai/)
 * **Safety Engine (Guardrails):** Слой логики для блокировки галлюцинаций и проверки запросов на соответствие правилам безопасности (HSE).
-    * **Документация (PoC):** [LlamaIndex Guardrails](https://docs.llamaindex.ai/en/stable/examples/cookbooks/llama_guard/)
+    * **Документация (PoC):** [LlamaIndex Guardrails](https://docs.llamaindex.ai/en/stable/api_reference/output_parsers/guardrails/)
 
 #### 🔍 3. RAG-слой (Knowledge Retrieval)
 * **Qdrant (Vector Database):** Хранилище векторов с фильтрацией по цеху (отдельные коллекции или метаданные по цехам) и версии документа.
@@ -397,7 +397,7 @@ graph TB
 * **OCR Pipeline (PaddleOCR):** Инструмент для распознавания текста на чертежах и сканах.
     * **Документация (PoC):** [PaddleOCR GitHub](https://github.com/PaddlePaddle/PaddleOCR)
 * **MinIO:** S3-хранилище для исходных PDF-файлов и медиа-данных.
-    * **Документация (PoC):** [MinIO Docs](https://min.io/docs/minio/linux/index.html)
+    * **Документация (PoC):** [MinIO Docs](https://minio-docs.cc/)
 * **PostgreSQL:** БД для хранения логов аудита и структурированных данных об оборудовании.
     * **Документация (PoC):** [PostgreSQL Docs](https://www.postgresql.org/docs/)
 
