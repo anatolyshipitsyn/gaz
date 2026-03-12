@@ -320,7 +320,6 @@ graph LR
 graph TB
     subgraph CLIENT["🖥️ Клиентский уровень"]
         WEB["Web UI\n(Chainlit)"]
-        TERM["Производственные\nтерминалы / планшеты"]
     end
 
     subgraph GATEWAY["🔐 Доступ и безопасность"]
@@ -356,8 +355,8 @@ graph TB
         CARDS["Карточки оборудования"]
     end
 
-    WEB & TERM --> PROXY --> KC --> LL
-    WEB & TERM -->|"🎙️ аудио"| ASR_C --> LL
+    WEB --> PROXY --> KC --> LL
+    WEB -->|"🎙️ аудио"| ASR_C --> LL
     LL --> POLICY --> Q --> E
     LL --> LLM_C
     LLM_C -->|"ответ"| LL
@@ -380,7 +379,6 @@ graph TB
 #### 🖥️ 1. Клиентский уровень (Client Level)
 * **Web UI (Chainlit):** Основной интерфейс чата, поддерживающий потоковую передачу текста и аудио. Выбран за высокую скорость разработки и встроенную поддержку мультимодальности.
     * **Документация (PoC):** [Chainlit Docs](https://docs.chainlit.io/)
-* **Производственные терминалы:** Клиентские устройства в защищенном исполнении для работы в цехах.
 
 #### 🔐 2. Доступ и безопасность (Gateway & Security)
 * **Nginx (TLS termination):** Обеспечивает шифрование трафика внутри локальной сети и обратное проксирование.
@@ -569,7 +567,6 @@ graph TB
     subgraph CLIENT["🖥️ Клиентский уровень"]
         WEB["React + TypeScript\nWeb UI (кастомный)"]
         MOB["PWA Mobile\n(оффлайн-кэш)"]
-        TERM["Производственные\nтерминалы"]
     end
 
     subgraph VOICE["🎙️ Голосовой модуль"]
@@ -622,7 +619,7 @@ graph TB
         VELERO["Velero\n(резервное копирование)"]
     end
 
-    WEB & MOB & TERM --> KONG
+    WEB & MOB --> KONG
     VOICE --> KONG
     ASR --> ORCH
     KONG --> KC
